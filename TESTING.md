@@ -12,6 +12,18 @@ JSON straight into the script and read the output.
 
 ---
 
+## Automated smoke tests
+
+A quick harness feeds fixture payloads through the script(s) and asserts on the output:
+
+```bash
+bash test/run.sh
+```
+
+It always exercises the **bash** implementation and, if `pwsh` is on `PATH`, the **PowerShell** one too — so bash⇄PowerShell parity drift surfaces. It exits non-zero if any check fails (usable in CI). The manual checklist below remains the way to eyeball colors, glyphs, and layout.
+
+---
+
 ## 0. Test harness
 
 Save a reusable sample payload once:
@@ -182,6 +194,7 @@ echo "$JSON" | sed "s#$PWD#$d#" | bash ~/.claude/statusline-command.sh | sed 's/
 
 | Symptom | Likely cause / fix |
 |---|---|
+| `.ps1` won't run on Windows (`UnauthorizedAccess`) | Run `powershell -ExecutionPolicy Bypass -File .\powershell\install.ps1`, or right-click → *Run with PowerShell* |
 | Row 1 empty or wrong on Windows | PowerShell path — confirm `statusLine.command` uses `powershell -NoProfile -File ...` |
 | Boxes instead of icons | No Nerd Font active in the terminal → set `USE_NERD_FONT=false` |
 | Native prompt feels slow | Trim `MODULES` (language version checks are the cost) |

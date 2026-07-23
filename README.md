@@ -21,8 +21,11 @@ Everything is dynamic and per-user. Nothing personal is baked in.
 ├── powershell/
 │   ├── statusline-command.ps1# status line (Windows)
 │   └── install.ps1
+├── test/
+│   └── run.sh                # smoke tests (bash always; pwsh if present)
 ├── README.md
 ├── TESTING.md
+├── CONTRIBUTING.md
 └── LICENSE
 ```
 
@@ -36,6 +39,8 @@ Run the installer for your OS from inside this folder, then **restart Claude Cod
 | **Windows** | `.\powershell\install.ps1` (in PowerShell) | none built-in; `git` + `starship` optional |
 
 The installer copies the status-line script and a default `statusline.conf` into your `~/.claude/` (`%USERPROFILE%\.claude\` on Windows), points `statusLine` in your `settings.json` at it (merging — your other settings are preserved), and backs up anything it replaces (`*.bak-<timestamp>`). Safe to re-run; it never overwrites an existing `statusline.conf`.
+
+> **Windows execution policy:** if PowerShell refuses to run the installer (`UnauthorizedAccess`), invoke it as `powershell -ExecutionPolicy Bypass -File .\powershell\install.ps1` (or right-click the file → *Run with PowerShell*). That bypass applies only to that single invocation.
 
 ## Testing
 
