@@ -1,0 +1,90 @@
+name: Bug Report
+description: Report a bug in the status line
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+
+        Before filing, please confirm you're on the latest `main` and have
+        restarted Claude Code (or started a new session) so the current
+        script and config are actually in effect.
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Information
+      description: Fill in the details below (run the commands where noted).
+      value: |
+        - OS + version: (e.g. macOS 15.1 Apple Silicon / Ubuntu 24.04 / Windows 11)
+        - Shell: (bash 5.2  /  PowerShell 7.4)
+        - Terminal / wrapper: (Ghostty, iTerm2, Windows Terminal, VS Code, tmux, CMUX, ...)
+        - Claude Code version: (run: claude --version)
+        - Starship: (run: starship --version  — or "not installed")
+        - jq (bash only): (run: jq --version)
+        - This tool: (commit SHA, or "latest main")
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Your configuration
+      description: "Paste your config — `cat ~/.claude/statusline.conf` (or write \"defaults\" if you haven't changed it)."
+      render: ini
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Please describe the bug in detail.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. In directory '...'
+        2. Open/close the sidebar / resize the pane / run '...'
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Screenshot and/or rendered output
+      description: |
+        A screenshot of the status line is very helpful. You can also paste the
+        raw output from running the script by hand — bash example:
+
+        ```bash
+        echo '{"workspace":{"current_dir":"'"$PWD"'"},"model":{"display_name":"Test"},"context_window":{"used_percentage":50,"total_input_tokens":500000,"context_window_size":1000000}}' \
+          | bash ~/.claude/statusline-command.sh | cat -v
+        ```
+      placeholder: Drag-and-drop a screenshot here, and/or paste the command output.
+
+  - type: checkboxes
+    id: environment
+    attributes:
+      label: Environment
+      options:
+        - label: A Nerd Font is installed **and** set as my terminal font
+        - label: Starship is installed
+        - label: I'm running inside a terminal multiplexer/wrapper (tmux, CMUX, screen, ...)
