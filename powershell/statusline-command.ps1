@@ -95,9 +95,15 @@ function Term-Cols {
 }
 
 function Convert-TimeFmt($f) {
-  $map = [ordered]@{ '%T' = 'HH:mm:ss'; '%R' = 'HH:mm'; '%H' = 'HH'; '%M' = 'mm'; '%S' = 'ss'; '%I' = 'hh'; '%p' = 'tt' }
+  # Map common strftime specifiers to .NET format. Uses case-SENSITIVE replace
+  # (-creplace) so %m (month) and %M (minute), %y and %Y, etc. don't collide.
+  $map = [ordered]@{
+    '%Y' = 'yyyy'; '%y' = 'yy'; '%m' = 'MM'; '%d' = 'dd'; '%e' = 'd'
+    '%T' = 'HH:mm:ss'; '%R' = 'HH:mm'; '%H' = 'HH'; '%M' = 'mm'; '%S' = 'ss'
+    '%I' = 'hh'; '%p' = 'tt'
+  }
   $out = $f
-  foreach ($k in $map.Keys) { $out = $out -replace [regex]::Escape($k), $map[$k] }
+  foreach ($k in $map.Keys) { $out = $out -creplace [regex]::Escape($k), $map[$k] }
   if (-not $out) { $out = 'HH:mm:ss' }
   return $out
 }
@@ -116,7 +122,7 @@ function Detect-Nerd {
   )
   foreach ($d in $dirs) {
     if ($d -and (Test-Path $d)) {
-      if (Get-ChildItem -Path $d -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'nerd' } | Select-Object -First 1) { $found = $true; break }
+      if (Get-ChildItem -Path $d -File -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'nerd' } | Select-Object -First 1) { $found = $true; break }
     }
   }
   $res = if ($found) { 'true' } else { 'false' }
@@ -197,7 +203,7 @@ function Mod-Nodejs {
 }
 
 function Mod-Python {
-  $bin = if (Cmd-Exists 'python') { 'python' } elseif (Cmd-Exists 'python3') { 'python3' } else { '' }
+  $bin = if (Cmd-Exists 'python3') { 'python3' } elseif (Cmd-Exists 'python') { 'python' } else { '' }
   if (-not $bin) { return $null }
   if (-not (Has-Files @('requirements.txt', 'pyproject.toml', 'Pipfile', 'setup.py', '.python-version', 'tox.ini', '*.py'))) { return $null }
   $v = (Run-Ver $bin @('--version')) -replace '^Python ', ''
@@ -279,7 +285,9 @@ function Mod-Time { Ansi '0' ((Get-Date).ToString((Convert-TimeFmt $TIME_FORMAT)
 
 function Build-NativeRow1 {
   $parts = @()
+  $fsModules = @('directory', 'git_branch', 'git_status', 'git_state', 'nodejs', 'python', 'golang', 'rust', 'ruby', 'java', 'package', 'sfdx')
   foreach ($m in $MODULES) {
+    if (($m -in $fsModules) -and -not $cwd) { continue }   # need a real cwd
     $seg = switch ($m) {
       'directory'  { Mod-Directory }
       'git_branch' { Mod-GitBranch }
@@ -365,7 +373,13 @@ if (-not $usageType) {
 }
 
 $row2 = ''
-if ($model) { $row2 += Ansi '35' $model }
+$dot = Ansi '90' '·'
+# Add-Space: space-join a segment (skips empties, so no stray leading space)
+function Add-Space($s) { if ($s) { if ($script:row2) { $script:row2 += ' ' + $s } else { $script:row2 = $s } } }
+# Add-Dot: join with a "·" separator, or start the row if nothing precedes it
+function Add-Dot($s) { if ($s) { if ($script:row2) { $script:row2 += ' ' + $script:dot + ' ' + $s } else { $script:row2 = $s } } }
+
+if ($model) { Add-Space (Ansi '35' $model) }
 
 if ($null -ne $usedPct -and "$usedPct" -ne '') {
   $up = [int][math]::Truncate([double]$usedPct)
@@ -375,17 +389,17 @@ if ($null -ne $usedPct -and "$usedPct" -ne '') {
   $bar = ('█' * $filled) + ('░' * ($BAR_WIDTH - $filled))
   $label = ''
   if ($null -ne $usedTok -and $null -ne $winSize) { $label = " $(Format-Tokens $usedTok) / $(Format-Tokens $winSize)" }
-  $row2 += ' ' + (Ansi (PctCode $up $CTX_YELLOW $CTX_RED) "$bar $up%$label")
+  Add-Space (Ansi (PctCode $up $CTX_YELLOW $CTX_RED) "$bar $up%$label")
 }
 
-if ($usageType) { $row2 += ' ' + (Ansi '90' '·') + ' ' + (Ansi '35' $usageType) }
+if ($usageType) { Add-Dot (Ansi '35' $usageType) }
 if ($null -ne $fiveHr -and "$fiveHr" -ne '') {
   $fh = [int][math]::Truncate([double]$fiveHr)
-  $row2 += ' ' + (Ansi '90' '·') + ' ' + (Ansi (PctCode $fh $RL_YELLOW $RL_RED) "Session(5h) $fh%")
+  Add-Dot (Ansi (PctCode $fh $RL_YELLOW $RL_RED) "Session(5h) $fh%")
 }
 if ($null -ne $sevenDay -and "$sevenDay" -ne '') {
   $wd = [int][math]::Truncate([double]$sevenDay)
-  $row2 += ' ' + (Ansi '90' '·') + ' ' + (Ansi (PctCode $wd $RL_YELLOW $RL_RED) "Week(all) $wd%")
+  Add-Dot (Ansi (PctCode $wd $RL_YELLOW $RL_RED) "Week(all) $wd%")
 }
 
 # ===================== output: row 1 then row 2 ============================
