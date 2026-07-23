@@ -8,6 +8,15 @@ body:
       value: |
         Thanks for suggesting a feature! Please describe it below.
 
+  - type: checkboxes
+    id: no-duplicate
+    attributes:
+      label: Is there an existing request for this?
+      description: Please search the [existing issues](https://github.com/rileymeye1/statusline-for-claude-code/issues?q=is%3Aissue) and [Discussions](https://github.com/rileymeye1/statusline-for-claude-code/discussions) first.
+      options:
+        - label: I have searched existing issues and discussions and found no duplicate
+          required: true
+
   - type: textarea
     id: problem
     attributes:
