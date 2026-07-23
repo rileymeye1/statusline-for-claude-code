@@ -1,4 +1,4 @@
-# Claude Code Status Line
+# Two Row Statusline for Claude Code
 
 A cross-platform, configurable, two-row status line for Claude Code.
 
@@ -80,6 +80,12 @@ Optional — the native prompt's icons come from a [Nerd Font](https://www.nerdf
 
 ### Native prompt modules: `MODULES`
 Space-separated, in display order. **Remove a name to disable that module entirely** — a disabled module runs no commands, so it's faster. Supported: `directory git_branch git_status git_state nodejs python golang rust ruby java package aws sfdx time`.
+
+A couple of modules are less obvious than the language ones:
+- **`sfdx`** — in a Salesforce DX project (a folder with `sfdx-project.json`), shows your default/target org read from `.sf/config.json` or `.sfdx/sfdx-config.json`, e.g. `with org production`.
+- **`aws`** — shows your active AWS profile/region from the environment (`AWS_PROFILE`/`AWS_VAULT`, `AWS_REGION`).
+
+These only apply to the **native** prompt. If you use Starship, its own config controls the equivalent modules (the screenshot above shows the SFDX org via a Starship custom module).
 
 ## Performance note
 
