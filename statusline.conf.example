@@ -1,0 +1,47 @@
+# ~/.claude/statusline.conf — Claude Code status line configuration
+# Plain KEY=VALUE. Edit, then start a new Claude Code session to apply.
+# (Copy this file to ~/.claude/statusline.conf; the installer does that for you.)
+
+# ================= Row 1: the prompt =================
+# auto     = use Starship if installed, otherwise the built-in native prompt
+# starship = always use Starship (falls back to native if not found)
+# native   = always use the built-in native prompt
+ROW1_SOURCE=auto
+
+# Nerd Font icons in the NATIVE prompt (Starship uses your own starship.toml).
+# auto  = use icons if a Nerd Font is installed (detected once, then cached), else ASCII
+# true  = always use icons
+# false = always use plain ASCII labels
+USE_NERD_FONT=auto
+
+# ================= Native prompt modules =================
+# Space-separated, in display order. Remove a name to disable that module
+# entirely — a disabled module runs NO commands, so it renders faster.
+# Available: directory git_branch git_status git_state nodejs python golang
+#            rust ruby java package aws sfdx time
+MODULES="directory git_branch git_status git_state nodejs python golang rust ruby java package aws sfdx time"
+
+# Directory: number of trailing path segments to show (0 = full path). ~ = home.
+DIR_TRUNCATE=3
+
+# Clock format for the 'time' module (strftime; %T = 23:59:59, %R = 23:59)
+TIME_FORMAT=%T
+
+# Separator between row-1 modules
+SEPARATOR=" "
+
+# Starship's right_format (e.g. a clock). Placement on row 1:
+#   RIGHT_ALIGN=false -> inline, right after the prompt (always fully visible)
+#   RIGHT_ALIGN=true  -> flush-right (best-effort; Claude Code doesn't expose the
+#                        status line's true width, so it may truncate — bump
+#                        RIGHT_MARGIN until it fits).
+RIGHT_ALIGN=false
+RIGHT_MARGIN=3
+
+# ================= Row 2: Claude info =================
+BAR_WIDTH=10           # context bar width, in segments
+CTX_YELLOW=70          # context bar turns yellow at this % used
+CTX_RED=90             # ...and red at this %
+RL_YELLOW=70           # Session(5h) / Week(all) turn yellow at this %
+RL_RED=90              # ...and red at this %
+USAGE_TYPE_OVERRIDE=   # force a plan label (e.g. Team); empty = auto-detect

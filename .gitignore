@@ -1,0 +1,12 @@
+# backups written by the installers
+*.bak-*
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# editor cruft
+*.swp
+*~
+.vscode/
+.idea/
