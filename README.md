@@ -2,6 +2,8 @@
 
 A cross-platform, configurable, two-row status line for Claude Code.
 
+![Status line for Claude Code](docs/screenshot.png)
+
 ```
 ~/dev/scripts on  main !? via  v22.3.0
 Opus 4.8 (1M context) ███████░░░ 70% 704.2k / 1.0M · Team · Session(5h) 89% · Week(all) 10%
