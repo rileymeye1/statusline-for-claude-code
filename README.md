@@ -1,4 +1,4 @@
-# Two Row Statusline for Claude Code
+# Two Row Status Line for Claude Code
 
 A cross-platform, configurable, two-row status line for Claude Code.
 

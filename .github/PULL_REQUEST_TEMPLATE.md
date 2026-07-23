@@ -16,7 +16,7 @@ Closes #
 
 ## Checklist
 
-- [ ] This PR is linked to an **approved** issue ([CONTRIBUTING](https://github.com/rileymeye1/statusline-for-claude-code/blob/main/CONTRIBUTING.md))
+- [ ] This PR is linked to an **approved** issue ([CONTRIBUTING](https://github.com/rileymeye1/status-line-for-claude-code/blob/main/CONTRIBUTING.md))
 - [ ] PR title follows **Conventional Commits** (`feat:`, `fix:`, `docs:`, …)
 - [ ] bash and PowerShell kept in **parity** (or N/A — explain in Summary)
 - [ ] Ran the relevant checks in `TESTING.md`
