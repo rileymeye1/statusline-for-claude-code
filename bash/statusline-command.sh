@@ -20,9 +20,29 @@ CTX_YELLOW=70; CTX_RED=90
 RL_YELLOW=70;  RL_RED=90
 USAGE_TYPE_OVERRIDE=""
 
+# Load config as data (KEY=VALUE), NOT by sourcing it — so a config that was
+# copied/shared or written by another tool can never execute code on render.
+# Only the known keys below are honored; everything else is ignored.
 CONF="$HOME/.claude/statusline.conf"
-# shellcheck disable=SC1090
-[ -f "$CONF" ] && . "$CONF"
+if [ -f "$CONF" ]; then
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    _line="${_line#"${_line%%[![:space:]]*}"}"                 # ltrim
+    case "$_line" in ''|'#'*) continue ;; esac                 # skip blank/comment
+    case "$_line" in *'='*) : ;; *) continue ;; esac           # need a '='
+    _key="${_line%%=*}"; _val="${_line#*=}"
+    _key="${_key%"${_key##*[![:space:]]}"}"; _key="${_key#"${_key%%[![:space:]]*}"}"  # trim key
+    _val="${_val#"${_val%%[![:space:]]*}"}"; _val="${_val%"${_val##*[![:space:]]}"}"  # trim val
+    case "$_val" in
+      \"*\") _val="${_val%\"}"; _val="${_val#\"}" ;;            # strip "double quotes"
+      \'*\') _val="${_val%\'}"; _val="${_val#\'}" ;;            # strip 'single quotes'
+      *) _val="${_val%%#*}"; _val="${_val%"${_val##*[![:space:]]}"}" ;;  # strip inline comment
+    esac
+    case " ROW1_SOURCE USE_NERD_FONT MODULES DIR_TRUNCATE TIME_FORMAT SEPARATOR RIGHT_ALIGN RIGHT_MARGIN BAR_WIDTH CTX_YELLOW CTX_RED RL_YELLOW RL_RED USAGE_TYPE_OVERRIDE " in
+      *" $_key "*) printf -v "$_key" '%s' "$_val" ;;
+    esac
+  done < "$CONF"
+  unset _line _key _val
+fi
 
 # ===================== parse Claude Code JSON (stdin) ======================
 cwd=$(echo "$input"       | jq -r '.workspace.current_dir // .cwd // ""')
@@ -123,6 +143,7 @@ mod_directory() {
   local p="$cwd"; [ -z "$p" ] && return
   case "$p" in
     "$HOME")   p="~" ;;
+    # shellcheck disable=SC2088  # ~ is a literal for display here, not an expansion
     "$HOME"/*) p="~/${p#"$HOME"/}" ;;
   esac
   if [ "${DIR_TRUNCATE:-0}" -gt 0 ]; then
@@ -272,6 +293,12 @@ mod_time() { c "0" "$(date +"$TIME_FORMAT")"; }
 build_native_row1() {
   local out="" seg m
   for m in $MODULES; do
+    # filesystem-reading modules need a real cwd; skip them if it's empty
+    # (a malformed payload) so we never inspect the process working directory.
+    case "$m" in
+      directory|git_branch|git_status|git_state|nodejs|python|golang|rust|ruby|java|package|sfdx)
+        [ -n "$cwd" ] || continue ;;
+    esac
     case "$m" in
       directory)  seg=$(mod_directory) ;;
       git_branch) seg=$(mod_git_branch) ;;
@@ -360,7 +387,12 @@ if [ -z "$usageType" ] && [ -f "$HOME/.claude.json" ]; then
 fi
 
 row2=""
-[ -n "$model" ] && row2+=$(c "35" "$model")
+# r2add: space-join a segment (skips empties, so no stray leading space)
+r2add() { [ -n "$1" ] && row2="${row2:+$row2 }$1"; }
+# r2dot: join with a "·" separator, or start the row if nothing precedes it
+r2dot() { [ -z "$1" ] && return; if [ -n "$row2" ]; then row2="$row2 $(c 90 '·') $1"; else row2="$1"; fi; }
+
+[ -n "$model" ] && r2add "$(c 35 "$model")"
 
 if [ -n "$used_pct" ]; then
   up=${used_pct%.*}; [ -z "$up" ] && up=0
@@ -370,17 +402,17 @@ if [ -n "$used_pct" ]; then
   bar=""; for ((i=0; i<BAR_WIDTH; i++)); do [ "$i" -lt "$filled" ] && bar+="█" || bar+="░"; done
   code=$(pct_code "$up" "$CTX_YELLOW" "$CTX_RED")
   label=""; [ -n "$used_tok" ] && [ -n "$win_size" ] && label=" $(fmt_tokens "$used_tok") / $(fmt_tokens "$win_size")"
-  row2+=" $(c "$code" "${bar} ${up}%${label}")"
+  r2add "$(c "$code" "${bar} ${up}%${label}")"
 fi
 
-[ -n "$usageType" ] && row2+=" $(c 90 '·') $(c 35 "$usageType")"
+[ -n "$usageType" ] && r2dot "$(c 35 "$usageType")"
 if [ -n "$five_hr" ]; then
   fh=${five_hr%.*}; [ -z "$fh" ] && fh=0
-  row2+=" $(c 90 '·') $(c "$(pct_code "$fh" "$RL_YELLOW" "$RL_RED")" "Session(5h) ${fh}%")"
+  r2dot "$(c "$(pct_code "$fh" "$RL_YELLOW" "$RL_RED")" "Session(5h) ${fh}%")"
 fi
 if [ -n "$seven_day" ]; then
   wd=${seven_day%.*}; [ -z "$wd" ] && wd=0
-  row2+=" $(c 90 '·') $(c "$(pct_code "$wd" "$RL_YELLOW" "$RL_RED")" "Week(all) ${wd}%")"
+  r2dot "$(c "$(pct_code "$wd" "$RL_YELLOW" "$RL_RED")" "Week(all) ${wd}%")"
 fi
 
 # ===================== output: row 1 then row 2 ============================
