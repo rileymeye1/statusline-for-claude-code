@@ -4,11 +4,6 @@ A cross-platform, configurable, two-row status line for Claude Code.
 
 ![Status line for Claude Code](docs/screenshot.png)
 
-```
-~/dev/scripts on  main !? via  v22.3.0
-Opus 4.8 (1M context) ███████░░░ 70% 704.2k / 1.0M · Team · Session(5h) 89% · Week(all) 10%
-```
-
 **Row 1 — your prompt.** Uses [Starship](https://starship.rs) if it's installed (so it matches your terminal exactly), or a built-in **native prompt** otherwise. No Starship required. Starship's `right_format` (e.g. a clock) is shown **inline** by default so it's always fully visible; set `RIGHT_ALIGN=true` to attempt flush-right (best-effort — see below).
 
 **Row 2 — Claude info.** Model · context bar (`used / limit`, color-coded toward 100%) · plan (auto-detected) · Session(5h) and Week(all) rate-limit usage.
